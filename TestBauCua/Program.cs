@@ -15,21 +15,55 @@ namespace TestBauCua
 
     class Program
     {
+        private const int TIEN_VON_GOC = 1_000_000;
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private static Animal dat_cua = Animal.Ga;
 
         private static int so_tien_dat_cuoc_default = 10_000; // 10 nghin (default)
-        private static int tien_von_ban_dau = 1_000_000; // 10 TRIEU
+        private static int tien_von_ban_dau = TIEN_VON_GOC; // 10 TRIEU
+        private static bool? van_truoc_thang = null;
+        private static int so_tien_cuoc_van_truoc;
+        private static bool che_do_nga_o_dau_gap_doi_o_do = true;  // chế độ Ngã ở đâu gấp đôi ở đó 
 
         static int SoTienCuoc(int so_tien_hien_co)
         {
-            while (true)
+            if (che_do_nga_o_dau_gap_doi_o_do)
             {
-                var random = (int)Get64BitRandom(1, 5) * so_tien_dat_cuoc_default;
-                if (random <= so_tien_hien_co)
+                // van truoc thang, reset so tien
+                if (van_truoc_thang == null || van_truoc_thang == true)
                 {
-                    return random;
+                    if (so_tien_dat_cuoc_default <= so_tien_hien_co)
+                    {
+                        return so_tien_dat_cuoc_default;
+                    }
+                    else
+                    {
+                        return so_tien_hien_co;
+                    }
+                }
+                else
+                {
+                    // van truoc thua, x2 tien cuoc                    
+                    if ((so_tien_cuoc_van_truoc * 2) <= so_tien_hien_co)
+                    {
+                        return so_tien_cuoc_van_truoc * 2;
+                    }
+                    else
+                    {
+                        return so_tien_hien_co;
+                    }
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    var random = (int)Get64BitRandom(1, 5) * so_tien_dat_cuoc_default;
+                    if (random <= so_tien_hien_co)
+                    {
+                        return random;
+                    }
                 }
             }
         }
@@ -134,9 +168,14 @@ namespace TestBauCua
                         break;
                     }
 
+                    van_truoc_thang = isWinThisMatch;
+                    so_tien_cuoc_van_truoc = so_tien_dat_cuoc;
+
                     roundNumber++;
                 }
 
+                _logger.Info($"Tien von ban dau': $ {TIEN_VON_GOC:00,00.#}");
+                _logger.Info($"Che do choi Nga o dau gap doi o do dang {(che_do_nga_o_dau_gap_doi_o_do ? "BAT" : "TAT")}");
                 _logger.Info($"So tien thang cao nhat': $ {max_tien:00,00.#} tai luot choi [{max_tien_round}]");
 
                 _logger.Info($"Win x1: {winx1} lan`");
@@ -152,7 +191,7 @@ namespace TestBauCua
                 Console.WriteLine();
                 Console.WriteLine();
             }
-            
+
             Console.ReadKey();
         }
 
